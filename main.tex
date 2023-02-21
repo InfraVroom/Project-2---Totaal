@@ -1,0 +1,38 @@
+\documentclass[11pt,dutch]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{graphicx}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{hyperref}
+\usepackage{blindtext}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+
+\definecolor{Grey1}{HTML}{343434}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
+\graphicspath{ {./IMG/} }
+
+
+
+\begin{document}
+\include{main/front}
+\maketitle
+\include{main/inhouds}
+\include{Chapters/01_intro.tex}
+\include{Chapters/02_Rapport.tex}
+
+\end{document}
