@@ -1,0 +1,623 @@
+\section{Code}
+\subsection{main.ino}
+\begin{lstlisting}
+// Library BNO055
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+#include <Servo.h>
+#include "LedControl.h"
+
+//Header Files
+#include "sensor_struct.h"	
+#include "pin.h"
+#include "directions.h"
+#include "readsensor.h"
+#include "debug.h"
+#include "servo_function.h"
+#include "BTread.h"
+#include "selfdrive.h"
+
+const int servoPin = 10; // the pin number for the servo signal
+const int AngleFRONT = 90; //Set Angle
+Servo myservo;
+
+void setup() {
+  //Display controll 
+  display.clearDisplay(0);
+  display.shutdown(0,false);
+  display.setIntensity(0, 5); 
+  //Servo Write
+  myservo.attach(servoPin);
+  myservo.write(AngleFRONT);
+  //Open Serial Monitor
+  Serial.begin(115200); //Serial MON
+  Serial.println("Serial Working"); //Serial MON check
+  Serial1.begin(9600); //BT serial
+  while (!Serial) delay(10); //Wait until serial MON opened
+  // bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
+  if(!bno.begin()){Serial.print("Check wiring BNO055"); while(1);}//Initialise BNO055
+  
+  //Declaring IRpins
+  for (int i = 0; i<IR_sensoramount; i++){pinMode(IR_pins[i], INPUT);}
+  for (int i = 0; i<Sonar_sensoramount; i++){pinMode(sonarecho_pins[i], INPUT); pinMode(sonartrig_pins[i], OUTPUT);}
+
+  //Pinouts
+  pinMode(DIR_CLK, OUTPUT);
+  pinMode(DATA, OUTPUT);
+  pinMode(DIR_EN, OUTPUT);
+  pinMode(DIR_LATCH, OUTPUT);
+  pinMode(PWM0B, OUTPUT); //RB
+  pinMode(PWM0A, OUTPUT); //LB
+  pinMode(PWM2A, OUTPUT); //LF
+  pinMode(PWM2B, OUTPUT); //RF 
+  void MOTOR(int Direction, int MotorPWM1, int MotorPWM2, int MotorPWM3, int MotorPWM4);
+  delay(1000);}
+
+void loop() {
+  // bluetoothRead(); //Reading BT values
+  // straight();
+  selfdrive();
+  IRstate(); //Reading IR state
+  AXISstate(); //Reading 9Axis state
+  Sonarstate(); //Reading Sonar State
+  debug(); // Printing sensor states 115200 baud
+  // currentMillis = millis(); servoSweep(currentMillis);
+  }
+\end{lstlisting}
+\subsection{BTread.h}
+\begin{lstlisting}
+void bluetoothRead(){
+     while(Serial1.available()>0){ 
+    bluetoothValue = Serial1.read();
+    Serial.print(bluetoothValue);
+    delay(10);
+
+ if(bluetoothValue =='0'){
+    //  Serial.println(" Left ");
+      Left_Sideways();
+  }else if(bluetoothValue == '1'){
+     // Serial.println(" Forward ");
+      Forward();
+  }else if(bluetoothValue == '2'){
+     // Serial.println(" Right ");
+      Right_Sideways();
+  }else if(bluetoothValue == '3'){
+     // Serial.println(" Backwards ");
+      Backward();
+  }else if(bluetoothValue == '4'){
+      //Serial.println(" Faster");
+      MotorPWM1 = 130; //LF
+      MotorPWM2 = 150; //RF
+      MotorPWM3 = 130; //LB
+      MotorPWM4 = 150; //RB
+      SPEED(MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4); // go to directions.h to change
+  }else if(bluetoothValue == '5'){
+     // Serial.println(" Slower"); 
+     MotorPWM1 = 87;
+     MotorPWM2 = 90;
+     MotorPWM3 = 87;
+     MotorPWM4 = 90;
+      SPEED(MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4); //go to directions.h to change
+  }else if(bluetoothValue == '6'){ 
+      //Serial.println(" Left rotation");
+      Left_Rotation();
+  }else if(bluetoothValue == '7'){
+     // Serial.println(" Stop"); 
+      STOP();
+  }else if (bluetoothValue == '8'){
+     // Serial.println(" Right rotation"); 
+      Right_Rotation();
+  }else if (bluetoothValue == '9'){
+     // Serial.println(" Right rotation"); 
+      DEMO();
+      bluetoothValue = '7';
+      }}}
+\end{lstlisting}
+\subsection{debug.h}
+\begin{lstlisting}
+//print the values from the sensors to the Serial Monitor
+void debug(){ 
+  Serial.print("SONAR SENSOR:");
+  for (int i = 0; i<Sonar_sensoramount; i++){//START SONAR
+    Serial.print(" | ");
+    Serial.print(Sonar_sensor[i].location);
+    Serial.print(" [");
+    if(Sonar_sensor[i].anglepolarity==1){Serial.print("+");}
+    else {Serial.print("-");}
+    Serial.print(Sonar_sensor[i].angle);
+    Serial.print("] : ");
+    Serial.print(Sonar_sensor[i].distance);}//START IR -STOP SONAR
+  Serial.print(" |     IR SENSOR:");
+  for (int i = 0; i<IR_sensoramount; i++){
+    Serial.print(" | ");
+    Serial.print(IR_sensor[i].location);
+    Serial.print(" [");
+    if(IR_sensor[i].anglepolarity==1){Serial.print("+");}
+    else {Serial.print("-");}
+    Serial.print(IR_sensor[i].angle);
+    Serial.print("] : ");
+    Serial.print(IR_sensor[i].state);} //END IR-START AXIS
+    Serial.print(" |     AXIS SENSOR: X: ");
+    Serial.print(AXIS_sensor[0].xaxis);
+    Serial.print(" Y: ");
+    Serial.print(AXIS_sensor[0].yaxis);
+    Serial.print(" Z: ");
+    Serial.print(AXIS_sensor[0].zaxis);
+    Serial.print(" SPEED: ");
+    Serial.print(AXIS_sensor[0].speed);
+    Serial.print(" XPOS: ");
+    Serial.print(AXIS_sensor[0].LOCXAxis);
+    Serial.print(" YPOS: ");
+    Serial.print(AXIS_sensor[0].LOCYAxis);
+    Serial.println(" |");}
+\end{lstlisting}
+\subsection{directions.h}
+\begin{lstlisting}
+//Matrix Pins
+const int DIN_PIN = 38;
+const int CS_PIN = 42;
+const int CLK_PIN = 40;
+//Directions
+const int DIR_Forward = 39; 
+const int DIR_STOP = 0;
+const int DIR_Backward = 216;
+const int DIR_Left_Sideways = 106;
+const int DIR_Right_Sideways = 149;
+const int DIR_Left_AAB = 3;
+const int DIR_Right_AAB = 36;
+const int DIR_Forward_Left_Diagonally = 34;
+const int DIR_Backward_Left_Diagonally = 72;
+const int DIR_Forward_Right_Diagonally = 5;
+const int DIR_Backward_Right_Diagonally = 144;
+const int DIR_Left_Rotation = 139;
+const int DIR_Right_Rotation = 116;
+const int DIR_Left_Front_Rotation = 10;
+const int DIR_Right_Front_Rotation = 20;
+const int DIR_Left_Back_Rotation = 96;
+const int DIR_Right_Back_Rotation = 129;
+const int DIR_drift = 116;
+const int DIR_Forward_Right_Back_Drift = 38;
+const int DIR_Forward_Left_Back_Drift = 7;
+const int DIR_Forward_Right_Front_Drift = 37;
+const int DIR_Forward_Left_Front_Drift = 35 ;
+const int DIR_Backward_Right_Back_Drift = 152;
+const int DIR_Backward_Left_Back_Drift = 88;
+const int DIR_Backward_Right_Front_Drift = 200;
+const int DIR_Backward_Left_Front_Drift = 208;
+//Defining display
+LedControl display = LedControl(DIN_PIN, CLK_PIN, CS_PIN);
+//Matrix HEX codes
+const uint64_t IMAGES[] = {
+  0x081c3e0808080808, //Backward
+  0x08080808083e1c08, //Forward
+  0x002060ff60200000, //RIGHT
+  0x000406ff06040000, //Left
+  0x000042e242423c00, //RightRot
+  0x0000424742423c00, //LeftRot
+  0x0102040890e0e0f0, //Right diag FW
+  0x804020100907070f, //Left diag FW
+  0x0f07070910204080, //Left diag BW
+  0xf0e0e09008040201, //Right diag BWs
+  0x3c4281ffff81423c, //STOP
+  0xffe781dbff99bdff //LOL
+  };
+const int IMAGES_LEN = sizeof(IMAGES)/8;
+void displayImage(uint64_t image) {
+  for (int i = 0; i < 8; i++) {
+    byte row = (image >> i * 8) & 0xFF;
+    for (int j = 0; j < 8; j++) {
+      display.setLed(0, i, j, bitRead(row, j));
+    }}}
+//MotorSpeed
+int MotorPWM1 = 130; //LF
+int MotorPWM2 = 150; //RF
+int MotorPWM3 = 130; //LB
+int MotorPWM4 = 150; //RB
+//Writing speed
+void SPEED(int MotorPWM1, int MotorPWM2, int MotorPWM3, int MotorPWM4){
+  analogWrite(PWM2A, MotorPWM1);
+  analogWrite(PWM2B, MotorPWM2);
+  analogWrite(PWM0A, MotorPWM3);
+  analogWrite(PWM0B, MotorPWM4);}
+//Driving motor
+void MOTOR(int Direction, int MotorPWM1, int MotorPWM2, int MotorPWM3, int MotorPWM4) {
+  SPEED(MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+  digitalWrite(DIR_LATCH, LOW);
+  shiftOut(DATA, DIR_CLK, MSBFIRST, Direction);
+  digitalWrite(DIR_LATCH, HIGH);}
+//Directions
+void Forward(){
+MOTOR(DIR_Forward, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[1]);}
+
+void STOP(){
+MOTOR(DIR_STOP, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[10]);
+delay(100);}
+
+void Backward(){
+MOTOR(DIR_Backward, MotorPWM1, MotorPWM2,MotorPWM3, MotorPWM4);
+displayImage(IMAGES[0]);}
+
+void Left_Sideways(){
+MOTOR(DIR_Left_Sideways, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[3]);}
+
+void Right_Sideways(){
+MOTOR(DIR_Right_Sideways, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[2]);}
+
+void Left_AAB(){
+MOTOR(DIR_Left_AAB, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Right_AAB(){
+MOTOR(DIR_Right_AAB, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Forward_Left_Diagonally(){
+MOTOR(DIR_Forward_Left_Diagonally, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[7]);}
+
+void Backward_Left_Diagonally(){
+MOTOR(DIR_Backward_Left_Diagonally, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[8]);}
+
+void Forward_Right_Diagonally(){
+MOTOR(DIR_Forward_Right_Diagonally, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[6]);}
+
+void Backward_Right_Diagonally(){
+MOTOR(DIR_Backward_Right_Diagonally, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[9]);}
+
+
+void Left_Rotation(){
+MOTOR(DIR_Left_Rotation, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Right_Rotation(){
+MOTOR(DIR_Right_Rotation, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Left_Front_Rotation(){
+MOTOR(DIR_Left_Front_Rotation, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Right_Front_Rotation(){
+MOTOR(DIR_Right_Front_Rotation, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Left_Back_Rotation(){
+MOTOR(DIR_Left_Back_Rotation, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Right_Back_Rotation(){
+MOTOR(DIR_Left_Back_Rotation, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Forward_Right_Back_Drift(){
+MOTOR(DIR_Forward_Right_Back_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Forward_Left_Back_Drift(){
+MOTOR(DIR_Forward_Left_Back_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Forward_Right_Front_Drift(){
+MOTOR(DIR_Forward_Right_Front_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Forward_Left_Front_Drift(){
+MOTOR(DIR_Forward_Left_Front_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Backward_Right_Back_Drift(){
+MOTOR(DIR_Backward_Right_Back_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Backward_Left_Back_Drift(){
+MOTOR(DIR_Backward_Left_Back_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Backward_Right_Front_Drift(){
+MOTOR(DIR_Backward_Right_Front_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+void Backward_Left_Front_Drift(){
+MOTOR(DIR_Backward_Left_Front_Drift, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+displayImage(IMAGES[11]);}
+
+//Demo scene
+void DEMO(){
+ Forward();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Backward();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Left_Sideways();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Right_Sideways();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Left_AAB();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Right_AAB();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Forward_Left_Diagonally();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Backward_Left_Diagonally();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Forward_Right_Diagonally();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Backward_Right_Diagonally();
+ delay(2000);
+ STOP();
+ delay(500);
+
+
+ Left_Rotation();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Right_Rotation();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Left_Front_Rotation();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Right_Front_Rotation();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Left_Back_Rotation();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Right_Back_Rotation();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Forward_Right_Back_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Forward_Left_Back_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Forward_Right_Front_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+ 
+ Forward_Left_Front_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Backward_Right_Back_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Backward_Left_Back_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Backward_Right_Front_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+
+ Backward_Left_Front_Drift();
+ delay(2000);
+ STOP();
+ delay(500);
+}
+\end{lstlisting}
+\subsection{pin.h}
+\begin{lstlisting}
+//Motorshield PMW
+const int PWM2A = 11;
+const int PWM2B = 3;
+const int PWM0A = 6;
+const int PWM0B = 5;
+//Motorshield data
+const int DIR_CLK = 4;
+const int DIR_EN = 7;
+const int DATA = 8;
+const int DIR_LATCH = 12;
+//IR SENSOR
+const int IR_pins[] = {22, 24, 26, 28, 30, 32, 34, 36};
+const int IR_sensoramount = sizeof(IR_pins) / sizeof(IR_pins[0]);
+//SONAR SENSOR
+const int sonartrig_pins[] = {25, 33, 29};
+const int sonarecho_pins[] = {23, 31, 27};
+const int Sonar_sensoramount = sizeof(sonartrig_pins) / sizeof(sonartrig_pins[0]);
+//9 Axis I2C adress
+Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28, &Wire);
+//BT char
+char bluetoothValue;
+\end{lstlisting}
+\subsection{readsensor.h}
+\begin{lstlisting}
+/* Set the delay between fresh samples */
+#define BNO055_SAMPLERATE_DELAY_MS (100)
+void IRstate() { //Reading IR state
+  for (int i = 0; i<IR_sensoramount; i++){
+    IR_sensor[i].state = digitalRead(IR_pins[i]);}}
+
+void Sonarstate(){ //Reading Sonar state/distance
+  for (int i = 0; i<Sonar_sensoramount; i++){
+  digitalWrite(sonartrig_pins[i], LOW); 
+  delayMicroseconds(2);
+  digitalWrite(sonartrig_pins[i], HIGH); // set trigger pin to High to send a pulse into the real world
+  delayMicroseconds(10);
+  digitalWrite(sonartrig_pins[i], LOW); 
+  Sonar_sensor[i].duration = pulseIn(sonarecho_pins[i], HIGH); // measure the time it takes to receive the pulse
+  Sonar_sensor[i].distance = Sonar_sensor[i].duration * 0.034 / 2; //calculate the distance in cm
+  }}
+
+void AXISstate(){//Reading 9Axis State
+  imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+  AXIS_sensor[0].xaxis = euler.x();
+  AXIS_sensor[0].yaxis = euler.y();
+  AXIS_sensor[0].zaxis = euler.z();
+  imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+  AXIS_sensor[0].speed = sqrt(pow(accel.x(), 2) + pow(accel.y(), 2) + pow(accel.z(), 2));
+  AXIS_sensor[0].LOCXAxis = accel.x();
+  AXIS_sensor[0].LOCYAxis = accel.y();
+  /* Display the floating point data */
+  delay(BNO055_SAMPLERATE_DELAY_MS);}
+
+
+
+
+\end{lstlisting}
+\subsection{sensor\_struct.h}
+\begin{lstlisting}
+//Struct data localisation
+struct data{
+  char location[5];
+  int state; //IR
+  long duration; //US
+  int distance; //US
+  int angle; //US
+  int anglepolarity; //0 = min, 1 = plus 
+  char sensor_type[30];};
+
+//declaring 8 IR sensors by using a struct
+struct data IR_sensor[] ={
+  {"LB", 0, 0, 0, 180, 1, "IR Sensor"},
+  {"LB", 0, 0, 0, 90, 0, "IR Sensor"},
+  {"LF", 0, 0, 0, 0, 1, "IR Sensor"},
+  {"LF", 0, 0, 0, 90, 0, "IR Sensor"},
+  {"RB", 0, 0, 0, 180, 1, "IR Sensor"},
+  {"RB", 0, 0, 0, 90, 1, "IR Sensor"},
+  {"RF", 0, 0, 0, 90, 1, "IR Sensor"},
+  {"RF", 0, 0, 0, 0, 1, "IR Sensor"}};
+
+//declaring 3 sonar sensors by using a struct
+struct data Sonar_sensor[] ={ 
+  {"FRONT", 0, 0, 0, 0, 0, "Sonar sensor"},
+  {"LEFT", 0, 0, 0, 0, "Sonar sensor"},
+  {"RIGHT", 0, 0, 0, 0, "Sonar sensor"}};
+
+//AxisSensor struct
+struct axis{
+  float xaxis;
+  float yaxis;
+  float zaxis;
+  float speed;
+  float LOCXAxis;
+  float LOCYAxis;
+  char sensor_type[30];};
+
+//AxisSensor data struct
+struct axis AXIS_sensor[] ={
+  {0, 0, 0, 0, 0, 0, "9 Axis Sensor"}};
+\end{lstlisting}
+\subsection{selfdrive.h}
+\begin{lstlisting}
+int sidecount = 0;
+int rotation = 500;
+int driven = 0;
+float TargetRoll = 0.0;    
+float TargetPitch = 0.0;   
+float Tolerance = 1.0;
+float MovementThreshold = 0.05;   
+
+void selfdrive(){
+imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+
+     MotorPWM1 = 90;
+     MotorPWM2 = 90;
+     MotorPWM3 = 90;
+     MotorPWM4 = 90;
+
+  TargetRoll=AXIS_sensor[0].xaxis;
+  float RollError = AXIS_sensor[0].xaxis - TargetRoll;
+  float PitchError = AXIS_sensor[0].yaxis - TargetPitch;
+
+  if(Sonar_sensor[0].distance>30 || IR_sensor[2].state==0 || IR_sensor[7].state==0)
+  {
+    if (abs(RollError) <= Tolerance && abs(PitchError) <= Tolerance) {
+    // Car is driving straight, use default motor PWM values
+    MOTOR(DIR_Forward, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
+    displayImage(IMAGES[1]);
+  } else {
+    // Car is not driving straight, adjust motor PWM values
+    displayImage(IMAGES[1]);
+    MOTOR(DIR_Forward, MotorPWM1 - RollError, MotorPWM2 + RollError, MotorPWM3 - RollError, MotorPWM4 + RollError);
+  }}else if(sidecount==6){
+    Backward(); 
+    driven = 1;
+    delay(750); 
+    sidecount = 0;
+      if(Sonar_sensor[1].distance>Sonar_sensor[2].distance){
+       Left_Rotation();
+       delay(rotation);
+      }else if(Sonar_sensor[1].distance<Sonar_sensor[2].distance){
+        Right_Rotation();
+        delay(rotation);
+    }}else if(Sonar_sensor[1].distance>Sonar_sensor[2].distance){
+    Left_Sideways();
+    sidecount++;
+  } else if(Sonar_sensor[1].distance<Sonar_sensor[2].distance){
+    Right_Sideways();
+    sidecount++;
+    } else {STOP();}
+if(Sonar_sensor[1].distance<10){
+  Right_Sideways();}
+if(Sonar_sensor[2].distance<10){
+  Left_Sideways();}
+    if ((abs(accel.x() - AXIS_sensor[0].LOCXAxis) > MovementThreshold || 
+      abs(accel.y() - AXIS_sensor[0].LOCYAxis) > MovementThreshold || AXIS_sensor[0].speed <10) && driven==1 ) {
+    Backward(); 
+    delay(250);
+    driven = 0;
+    STOP();
+    delay(250);
+    Right_Rotation();
+    delay(rotation);
+      }}
+\end{lstlisting}
