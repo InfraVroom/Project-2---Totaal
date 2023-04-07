@@ -1,4 +1,4 @@
-\section{Code}
+\section{Bijlage 1}
 \subsection{main.ino}
 \begin{lstlisting}
 // Library BNO055
@@ -63,8 +63,7 @@ void loop() {
   AXISstate(); //Reading 9Axis state
   Sonarstate(); //Reading Sonar State
   debug(); // Printing sensor states 115200 baud
-  // currentMillis = millis(); servoSweep(currentMillis);
-  }
+  // currentMillis = millis(); servoSweep(currentMillis);}
 \end{lstlisting}
 \subsection{BTread.h}
 \begin{lstlisting}
@@ -112,8 +111,7 @@ void bluetoothRead(){
   }else if (bluetoothValue == '9'){
      // Serial.println(" Right rotation"); 
       DEMO();
-      bluetoothValue = '7';
-      }}}
+      bluetoothValue = '7';}}}
 \end{lstlisting}
 \subsection{debug.h}
 \begin{lstlisting}
@@ -201,15 +199,13 @@ const uint64_t IMAGES[] = {
   0x0f07070910204080, //Left diag BW
   0xf0e0e09008040201, //Right diag BWs
   0x3c4281ffff81423c, //STOP
-  0xffe781dbff99bdff //LOL
-  };
+  0xffe781dbff99bdff //LOL};
 const int IMAGES_LEN = sizeof(IMAGES)/8;
 void displayImage(uint64_t image) {
   for (int i = 0; i < 8; i++) {
     byte row = (image >> i * 8) & 0xFF;
     for (int j = 0; j < 8; j++) {
-      display.setLed(0, i, j, bitRead(row, j));
-    }}}
+      display.setLed(0, i, j, bitRead(row, j));}}}
 //MotorSpeed
 int MotorPWM1 = 130; //LF
 int MotorPWM2 = 150; //RF
@@ -272,7 +268,6 @@ displayImage(IMAGES[6]);}
 void Backward_Right_Diagonally(){
 MOTOR(DIR_Backward_Right_Diagonally, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
 displayImage(IMAGES[9]);}
-
 
 void Left_Rotation(){
 MOTOR(DIR_Left_Rotation, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
@@ -451,8 +446,7 @@ void DEMO(){
  Backward_Left_Front_Drift();
  delay(2000);
  STOP();
- delay(500);
-}
+ delay(500);}
 \end{lstlisting}
 \subsection{pin.h}
 \begin{lstlisting}
@@ -494,8 +488,7 @@ void Sonarstate(){ //Reading Sonar state/distance
   delayMicroseconds(10);
   digitalWrite(sonartrig_pins[i], LOW); 
   Sonar_sensor[i].duration = pulseIn(sonarecho_pins[i], HIGH); // measure the time it takes to receive the pulse
-  Sonar_sensor[i].distance = Sonar_sensor[i].duration * 0.034 / 2; //calculate the distance in cm
-  }}
+  Sonar_sensor[i].distance = Sonar_sensor[i].duration * 0.034 / 2; //calculate the distance in cm}}
 
 void AXISstate(){//Reading 9Axis State
   imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
@@ -508,10 +501,6 @@ void AXISstate(){//Reading 9Axis State
   AXIS_sensor[0].LOCYAxis = accel.y();
   /* Display the floating point data */
   delay(BNO055_SAMPLERATE_DELAY_MS);}
-
-
-
-
 \end{lstlisting}
 \subsection{sensor\_struct.h}
 \begin{lstlisting}
@@ -568,18 +557,15 @@ float MovementThreshold = 0.05;
 
 void selfdrive(){
 imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
-
      MotorPWM1 = 90;
      MotorPWM2 = 90;
      MotorPWM3 = 90;
      MotorPWM4 = 90;
-
   TargetRoll=AXIS_sensor[0].xaxis;
   float RollError = AXIS_sensor[0].xaxis - TargetRoll;
   float PitchError = AXIS_sensor[0].yaxis - TargetPitch;
 
-  if(Sonar_sensor[0].distance>30 || IR_sensor[2].state==0 || IR_sensor[7].state==0)
-  {
+  if(Sonar_sensor[0].distance>30 || IR_sensor[2].state==0 || IR_sensor[7].state==0) {
     if (abs(RollError) <= Tolerance && abs(PitchError) <= Tolerance) {
     // Car is driving straight, use default motor PWM values
     MOTOR(DIR_Forward, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
@@ -618,6 +604,5 @@ if(Sonar_sensor[2].distance<10){
     STOP();
     delay(250);
     Right_Rotation();
-    delay(rotation);
-      }}
+    delay(rotation);}}
 \end{lstlisting}

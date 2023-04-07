@@ -1,22 +1,31 @@
 \section{Uit welke onderdelen bestaat de Smart-Car en waarvoor worden deze gebruikt?}
+De \gls{Smart-Car} bestaat uit verschillende onderdelen, waaronder sensoren en actuatoren. Sensoren zoals infrarood\cite{IR-datasheet}- en ultrasonische sensoren worden gebruikt om objecten te detecteren en afstanden te meten, terwijl motoren worden aangestuurd door een \gls{motorshield} dat bestaat uit een \gls{shift-register} en motor drivers\cite{h-brug}. De 9 axis sensor meet de oriëntatie van de \gls{Smart-Car} en wordt momenteel alleen gebruikt om de auto rechtdoor te laten rijden.
 \subsection{Sensoren}
 \subsubsection{Infrarood sensoren}
 \begin{figure}[h]
     \centering
     \includegraphics[scale = 0.35]{Media/Figuren/HW-201.jpg}
-    \caption{HW-201 component}
+    \caption{HW-201}
     \label{HW-201}
+    \cite{HW-201-hardware} 
 \end{figure}
 Infrarood sensoren werken door infrarood straling te zenden en te ontvangen. Het zenden gebeurd met een Infrarood led en het ontvangen met een fotodiode. Het is geschikt voor het detecteren van objecten \cite{IR-datasheet}.
 
 In eerste instantie waren HW-201 infrarood sensoren gebruikt voor het detecteren van objecten van 2 tot 30 centimeter. In figuur \ref{HW-201}\cite{HW-201-hardware} is de HW-201 te zien. Voor de eisen van het project is aangegeven dat er vier infrarood sensoren gebruikt moeten worden met in elke hoek één infrarood sensor. De voorste sensoren wijzen naar voren en de achterste sensoren wijzen naar achteren. Door Infra Vroom is er gekozen om vier extra infrarood sensoren te plaatsen, zodat de \gls{Smart-Car} uiteindelijk makkelijker door zijn omgeving kan manoeuvreren. In elke hoek is er één sensor extra geplaatst die naar de zijkant van de \gls{Smart-Car} wijst. Uiteindelijk is ervoor gekozen een ander soort sensor te gebruiken met dezelfde werking, omdat de HW-201 te groot is. De vervangende infrarood sensoren zijn ontworpen door een van de begeleidende docenten en worden alleen voor de \gls{Smart-Car} gebruikt. Deze Infrarood sensoren hebben dezelfde werking als de HW-201 infrarood sensoren alleen is er nu een centrale printplaat in het midden van de \gls{Smart-Car} met in elke hoek een ontvanger, zender en een output pin die op de printplaat kan worden aangesloten. Uiteindelijk is er besloten om de infrarood sensoren te gebruiken om te bepalen of er een blokkade is in de richting waarin de sensor wijst.
 \subsubsection{Ultrasonische sensoren}
-Ultrasoon sensoren zenden en ontvangen ultrasoon geluid met een frequentie van 20 kHz en bepaald met behulp van een berekening de afstand tot een object. De HC-SR04 ultrasonische sensor is geschikt om afstanden te meten van 4 cm tot 4 m door het gebruik van twee \gls{transducer}s: zender en ontvanger. De \gls{Smart-Car} moet afstanden kunnen meten tot een bepaald object, waardoor de ultrasonische sensor geschikt is voor de eisen van de opdrachtgever\cite{HC-SR04}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.2]{Media/Figuren/HCSR04-hardware.jpg}
+    \caption{HC-SR04}
+    \label{HC-SR04-component}
+    \cite{HC-SR04-image-RL} 
+\end{figure}
+Ultrasoon sensoren zenden en ontvangen ultrasoon geluid met een frequentie van 20 kHz en bepaald met behulp van een berekening de afstand tot een object. De HC-SR04 ultrasonische sensor, te zien in figuur \ref{HC-SR04-component}\cite{HC-SR04-image-RL}, is geschikt om afstanden te meten van 4 cm tot 4 m door het gebruik van twee \gls{transducer}s: zender en ontvanger. De \gls{Smart-Car} moet afstanden kunnen meten tot een bepaald object, waardoor de ultrasonische sensor geschikt is voor de eisen van de opdrachtgever\cite{HC-SR04}.
 
 De \gls{Smart-Car} beschikt over drie ultrasonische sensoren: links, rechts en voor. Door deze plaatsing van de sensoren zou de \gls{Smart-Car} door een omgeving moeten kunnen rijden en daarop kunnen reageren. 
 
 \subsubsection{9 Axis Sensor}
-De BNO055\cite{AXIS} is een 9-assige oriëntatiesensor die wordt gebruikt om de oriëntatie van de \gls{Smart-Car} in de ruimte te meten. Het kan de oriëntatie van een object meten in de vorm van Euler-hoeken (roll, pitch, yaw) of als quaternion.
+De BNO055\cite{AXIS} is een versnellingsmeter, gyroscoop, magnetometer en oriëntatie die wordt gebruikt om de oriëntatie van de \gls{Smart-Car} in de ruimte te meten. Het kan de oriëntatie van een object meten in de vorm van Euler-hoeken (roll, pitch, yaw) of als quaternion.
 
 De BNO055\cite{AXIS} kan worden aangestuurd via een protocol. Via dit protocol kunnen verschillende configuratieparameters ingesteld worden. Momenteel wordt het alleen nog gebruikt om de \gls{Smart-Car} rechtdoor te laten rijden in de gewenste richting. 
 \subsection{Actuatoren}
@@ -33,107 +42,79 @@ Om een DC-motor in één richting te laten draaien, moeten de logische waarden o
 Er zit momenteel 1 servo op de \gls{Smart-Car}. De servo bevindt zich op de voorkant. Op deze servo is de voorste ultrasoon sensor bevestigd. De servo moet ervoor zorgen dat de ultrasoon sensor meer kan detecteren dan alleen vooruit. Dit zorgt ervoor dat de dode hoek kleiner wordt. Voor deze servo zijn verschillende versies code geschreven, dit vanwege verbeteringen en vanwege onduidelijkheden. 
 
 \begin{lstlisting}
-    #include <Servo.h>
-
+#include <Servo.h>
 int servoPin = 10;
 Servo servo;
 int pos = 0;   
 
 void setup() {
-  servo.attach(10); 
-}
-
+  servo.attach(10);}
 void loop() {
   for (pos = 60; pos <= 120; pos += 1) { 
     servo.write(pos);              
-    delay(30);                      
-  }
+    delay(30);}
   delay(30);
   for (pos = 120; pos >= 60; pos -= 1) {
     servo.write(pos);              
-    delay(30);                       
-  }
-}
+    delay(30);}}
 \end{lstlisting}
 
 De eerste code was geschreven met een library en de functie delay(). In eerste instantie is de code geschreven, om de servo heen en weer te laten zwaaien in een vloeiende beweging. Dit is gerealiseerd door eerst de library servo.h toe te voegen. vervolgens is een servo object aangemaakt, om de servo aan te kunnen sturen. Er is daarnaast een variabele int “angle” aangemaakt, welke gelijk is gesteld aan 0.  In void setup() is de servo pin gedeclareerd met behulp van de functie servo.attach. 
 Dan volgt de void loop(), hierin is doormiddel van twee simpele for-loops de geleidelijke beweging gerealiseerd. Deze for-loops passen de hoek van de servo telkens aan met servo.write. Iedere keer dat de for-loop wordt doorlopen, verandert de hoek met 1 graden. De eerste for-loop vergroot de hoek, zolang deze kleiner of gelijk is aan 120 graden. De tweede for-loop verkleint de hoek, zolang de hoek groter of gelijk is aan 60 graden. In deze versie van de code staan in beide for-loops nog delay functies. Dit is niet ideal, want deze stoppen alle code op de Arduino Mega\cite{ArduinoMEGA} voor de duratie van de functie. 
 
 \begin{lstlisting}
-    int angle;
+int angle;
 int pwm;
 
-void setup()
-{
-  pinMode(10, OUTPUT);
-}
+void setup() {
+  pinMode(10, OUTPUT);}
 
-void loop ()
-{
-  for (angle = 60; angle <= 120; angle += 1)  {
-    servoPulse(10, angle);  
-  }
-  for (angle = 120; angle >= 60; angle -= 1)  {
-    servoPulse(10, angle); 
-  }
-}
+void loop () {
+  for (angle = 60; angle <= 120; angle += 1) {
+    servoPulse(10, angle);}
+  for (angle = 120; angle >= 60; angle -= 1) {
+    servoPulse(10, angle);}}
   
-void servoPulse (int servo, int angle)
-{
+void servoPulse (int servo, int angle) {
   pwm = (angle*11) + 500;      // Convert angle to microseconds
   digitalWrite(servo, HIGH);
   delayMicroseconds(pwm);
   digitalWrite(servo, LOW);
-  delay(50);                   // Refresh cycle of servo
-}
+  delay(50);                   // Refresh cycle of servo}
 \end{lstlisting}
 
 Nadat de eerste versie geschreven was, werd door een leerling van een ander groepje gezegd dat er geen library gebruikt mocht worden. Vanwege de onzekerheid over de correctheid hiervan, is de code herschreven.  Dit keer zonder library\cite{Aansturen-servo-zonder-library}. In deze versie is de pinaanduiding gedaan met “pinMode()” in plaats van “servo.attach()” en is de simpele functie “servo.write()” vervangen door de functie “servoPulse()”. In de functie “servoPulse()” is een 2e variabele int “pwm” gebruikt. Deze is gebruikt om te bepalen hoe lang de servo moet draaien om de gewenste hoek te krijgen. Hiervoor is de berekening op regel 21 van de code uitgevoerd. Door gebruik te maken van “digitalWrite()” en “delayMicroseconds()” is de servo voor de berekende duur op hoog gezet. 
 
 \begin{lstlisting}
-    #include <Servo.h>
-
+#include <Servo.h>
 const int servoPin = 10; 
 const int servoMinDegrees = 60; 
 const int servoMaxDegrees = 120;
-
 Servo servo1;
-
 int servoPosition = servoMinDegrees;    
 int servoInterval = 30; 
 int servoDegrees = 1;       
 int servoDegreeCounter = servoMaxDegrees;
-
 unsigned long currentMillis = 0;    
 unsigned long previousServoMillis = 0; 
 
 void setup() {
-
-  Serial.begin(9600);
-  
-  
+  Serial.begin(9600);  
   servo1.write(servoPosition); 
-  servo1.attach(servoPin);
- 
-}
+  servo1.attach(servoPin);}
 
 void loop() {
-
   currentMillis = millis();
-  servoSweep();
-}
+  servoSweep();}
 
 void servoSweep() {
     while(currentMillis - previousServoMillis >= servoInterval) {
       previousServoMillis += servoInterval;
       servoPosition = servoPosition + servoDegrees; 
-      if ((servoPosition == servoMaxDegrees) || (servoPosition == servoMinDegrees))  {
+      if ((servoPosition == servoMaxDegrees) || (servoPosition == servoMinDegrees)) {
       servoDegrees = - servoDegrees; 
-      servoPosition = servoPosition + servoDegrees; 
-      }  
-    servo1.write(servoPosition);
-  }
-}
+      servoPosition = servoPosition + servoDegrees;}  
+    servo1.write(servoPosition);}}
 \end{lstlisting}
 
 De 3e versie van de servo code was geschreven toen duidelijk werd dat alleen voor de motorshield geen library gebruikt mocht worden en dus voor de servo wel. Daarnaast waren de eerste twee versies niet ideaal, vanwege het gebruik van de functie “delay()”. Daarom is de code voor de servo voor een derde keer herschreven, dit keer weer met library en zonder de delay functie\cite{Functie-millis-info}. 
@@ -150,13 +131,10 @@ Dit proces is tot stand gekomen met behulp van drie codes:
 \begin{enumerate}
     \item Voorbeeldcode: dit is een replica-code die van internet is gehaald om te testen of het scherm goed werkt en om een idee te krijgen voor de eigen code.
     \begin{lstlisting}
-        #include <MAX7219.h>
-
-// 8x8 Dot-Matrix
+#include <MAX7219.h>
 int DIN = 50;
 int CS =  53;
 int CLK = 51;
-
 MAX7219 Matrix(1, DIN, CLK, CS);
 
 // binary represention of a heart shape
@@ -168,8 +146,7 @@ const static byte HEART[8] = {
   0b01000010,
   0b00100100,
   0b00011000,
-  0b00000000
-};
+  0b00000000};
 
 // The Letter "R"
 // human-readable binary representation from left-to-right and top-to-bottom
@@ -181,108 +158,62 @@ const static byte R[8] = {
   0b01001000,
   0b01000100,
   0b01000010,
-  0b00000000
-};
+  0b00000000};
 
-void setup() {
-}
+void setup() {}
 
-void loop() {
-  
+void loop() {  
   // First LED in upper left Corner
   Matrix.setLed(1, 0, 0, true);
   delay(1000);
   Matrix.setLed(1, 0, 0, false);
   delay(1000);
-
   // Make Hearshape from array
-  for(int row = 0; row <= 7; row++)
-  {
+  for(int row = 0; row <= 7; row++) {
     Matrix.setRow(1, row, HEART[row]);
-    delay(100);
-  }
+    delay(100);}
   delay(1000);
-
   // Change Intensity to make it pulse
-  for(int repeats = 0; repeats < 3; repeats++)
-  {
+  for(int repeats = 0; repeats < 3; repeats++) {
     // increase intensity
-    for(int i = 1; i <= 15; i++)
-    {
+    for(int i = 1; i <= 15; i++) {
       Matrix.setIntensity(1, i);
-      delay(20);
-    }
-
+      delay(20);}
     // decrease intensity
-    for(int j = 15; j >= 1; j--)
-    {
+    for(int j = 15; j >= 1; j--) {
       Matrix.setIntensity(1, j);
-      delay(20);
-    }
-  }
+      delay(20);}}
   delay(1000);
-  
   // Make Letter "R" from array
-  for(int row = 0; row <= 7; row++)
-  {
+  for(int row = 0; row <= 7; row++) {
     Matrix.setRow(1, row, R[row]);
-    delay(100);
-  }
+    delay(100);}
   delay(1000);
-
   // invert display
   Matrix.invertDisplay(1);
-  delay(1000);
-  
+  delay(1000);  
   // clear display
   Matrix.clearDisplay(1);
-  delay(1000);
-}
+  delay(1000);}
     \end{lstlisting}
     \item 1e code: In het eerste ontwerp van de code worden de leds aangestuurd met behulp van een binaire combinatie van getallen. Deze binaire combinatie wordt vervolgens gecombineerd met een array in een void functie. Met deze code-structuur is het gemakkelijk om de pijl op het scherm weer te geven in de actuele rijrichting van de \gls{Smart-Car}. 
     \begin{lstlisting}
-        void setup() {  
-}
+void setup() {}
 
-void loop() {
- 
+void loop() { 
   up();
-  // letterL();    
-}
-
+  // letterL();}
 void up() {
 currentMillis = millis();  
 while (currentMillis - previousMillis >= matrixdelay) {
-
   // Make arrowup from array
-  for(int row = 0; row <= 7; row++)
-  {
-    LedControl(1, row, uparrow[row]);
-  }
-  
-  previousMillis += matrixdelay; //previousMillis = previousMillis + matrixdelay
-}
-}
-
-// void letterL(){
-  
-//    currentMillis = millis(); 
-// while (currentMillis - previousMillis >= matrixdelay ) {
- 
-//   // Make Letter arrowdown from array
-//   for(int row = 0; row <= 7; row++)
-//   {
-//     Ledcontrol(1, row, letterLarow[row]);
-//   }
-//   previousMillis += matrixdelay; //prevoiusMillis = previousMillis + matrixdelay
-  
-// }
-// }
+  for(int row = 0; row <= 7; row++) {
+    LedControl(1, row, uparrow[row]);}  
+  previousMillis += matrixdelay; //previousMillis = previousMillis + matrixdelay}}
     \end{lstlisting}
     \item Eindproduct: Omdat er 22 verschillende oriëntatie richtingen zijn, zou de combinatie van getallen in binaire vorm, het programma te lang en te complex maken. Als oplossing  is dit programma compacter gemaakt door Hexadecimale waarden te gebruiken die hetzelfde resultaat geven.
     \begin{lstlisting}
-        #include <LedControl.h>
-
+#include <LedControl.h>
 const int DIN_PIN = 50;
 const int CS_PIN = 53;
 const int CLK_PIN = 51;
@@ -297,34 +228,36 @@ const uint64_t IMAGES[] = {
   0x0102040890e0e0f0,
   0x804020100907070f,
   0x0f07070910204080,
-  0xf0e0e09008040201
-};
+  0xf0e0e09008040201};
 const int IMAGES_LEN = sizeof(IMAGES)/8;
-
 LedControl display = LedControl(DIN_PIN, CLK_PIN, CS_PIN);
 
 void setup() {
   display.clearDisplay(0);
   display.shutdown(0, false);
-  display.setIntensity(0, 5);
-}
+  display.setIntensity(0, 5);}
 
 void displayImage(uint64_t image) {
   for (int i = 0; i < 8; i++) {
     byte row = (image >> i * 8) & 0xFF;
     for (int j = 0; j < 8; j++) {
-      display.setLed(0, i, j, bitRead(row, j));
-    }
+      display.setLed(0, i, j, bitRead(row, j));}
     
 void loop() {
-  displayImage(IMAGES[i]);
-}
+  displayImage(IMAGES[i]);}
     \end{lstlisting}
 \end{enumerate}
-
+\vspace{80mm} %5mm vertical space #Dit is gedaan zodat de bluetooth afbeelding goed geplaatst wordt
 \subsection{Modules}
-\subsubsection{Bluetooth}
-De \gls{Bluetooth} module, de HC-05, wordt gebruikt voor het besturen van de \gls{Smart-Car} over een afstand van maximaal 10m. Hierbij is een applicatie gebruikt op de telefoon die door de opdrachtgever is gegeven. Het is de bedoeling dat de \gls{Smart-Car} bepaalde richtingen op kan, welke in het Programma van eisen beschreven staan. 
+\subsubsection{Bluetooth}\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.08]{Media/Figuren/HC-05_hardware.jpg}
+    \caption{HC-05}
+    \label{HC-05}
+    \cite{HC-05-image-fysiek-RL} 
+\end{figure}
+
+De HC-05\gls{Bluetooth} module, te zien in figuur \ref{HC-05}\cite{HC-05-image-fysiek-RL}, wordt gebruikt voor het besturen van de \gls{Smart-Car} over een afstand van maximaal 10m. Hierbij is een applicatie gebruikt op de telefoon die door de opdrachtgever is gegeven. Het is de bedoeling dat de \gls{Smart-Car} bepaalde richtingen op kan, welke in het Programma van eisen beschreven staan. 
 \subsubsection{Controller}
 Tijdens de ontwikkeling van de \gls{Smart-Car} is er een controller ontworpen om een \gls{Smart-Car} aan te sturen met behulp van \gls{RF433MHZ}-chips. Verschillende componenten werden hiervoor gebruikt, waaronder een \gls{TFT-display} met een \gls{ili9341}\cite{ILI3941} IC, twee KY-023 joysticks en een ESP32\cite{ESP32} D1 MINI \gls{microcontroller}.
 

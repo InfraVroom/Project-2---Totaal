@@ -1,4 +1,5 @@
 \section{Hoe zijn de tussenproducten getest?}
+In dit gedeelte wordt het testen van tussenproducten besproken, waaronder infrarood\cite{IR-datasheet}-, ultrasone- en 9-assige\cite{AXIS} sensoren. Om infraroodsensoren\cite{IR-datasheet} te testen, moeten ze worden aangesloten op het \gls{motorshield} en moet de digitale pin op de Arduino Mega 2560\cite{ArduinoMEGA} worden gedefinieerd als de invoerpin. Tijdens het testen werd ontdekt dat twee sensoren waren doorgebrand en vervangen moesten worden. Ultrasone sensoren worden getest door de VCC- en GND-pinnen aan te sluiten op het \gls{motorshield}, en de trigger- en echo-pinnen op een digitale pin op de Arduino Mega 2560\cite{ArduinoMEGA}. De echo-pin wordt gebruikt om de afstand te bepalen door de tijd te meten die nodig is voor het ultrasone geluid om terug te kaatsen. De motordriver\cite{h-brug} wordt aangestuurd door de shiftregister\cite{shiftregister}, die beide op het \gls{motorshield} zijn geplaatst. De shiftregister\cite{shiftregister} decodeert een 8-bits signaal. Hiervoor is een Excel-script geschreven.
 \subsection{Sensoren}
 Dit hoofdstuk beschrijft hoe infrarood, ultrasonisch en 9-axis sensoren zijn getest.
 \subsubsection{Infrarood sensoren}
@@ -6,11 +7,12 @@ Dit hoofdstuk beschrijft hoe infrarood, ultrasonisch en 9-axis sensoren zijn get
     \centering
     \includegraphics[scale = 0.3]{Media/Figuren/Arduino-IR-Sensor-Circuit.jpg}
     \caption{HW-201 schematische tekening}
+    \cite{HW-201-schema}
     \label{schematic-HW-201}   
     \end{figure}
 De infrarood sensor beschikt over drie aansluitingen: VCC, GND en een output pin. De VCC wordt op de 5V aangesloten en de GND pin wordt aangesloten op de grond. Beide pinnen worden aangesloten op de motorshield. De output pin word aangesloten op een willekeurige digitale pin op de Arduino Mega 2560. Voor het inlezen van de infrarood sensor moet op de Arduino mega 2560 de digitale pin worden gedefinieerd als input pin. Later kan met de data iets worden gedaan om objecten te vermijden.
 
-De infrarood sensor beschikt over een LM358 IC\cite{LM358-datasheet} In figuur \eqref{schematic-HW-201}\cite{HW-201-schema} is de schematische tekening te zien van de infrarood sensor. De LM358 vergelijkt twee spanningen op pin 2 en 3, te zien in figuur \eqref{schematic-HW-201}. Afhankelijk van de sterkte van de infrarood straling, komt er een spanning op pin 3 te staan door de fotodiode. Pin 2 is aangesloten op een variabele weerstand. Door aan de variabele weerstand te draaien komt er een andere spanning te staan op pin 2, waarmee de gevoeligheid kan worden ingesteld. Als op pin 3 een hogere spanning komt te staan dan op pin 2, wordt er op pin 1, de output pin, een hoog signaal gegeven. Een laag signaal wordt gegeven als de spanning op pin 3 lager is dan op pin 2.
+De infrarood sensor beschikt over een LM358 IC\cite{LM358-datasheet}. In figuur \eqref{schematic-HW-201}\cite{HW-201-schema} is de schematische tekening te zien van de infrarood sensor. De LM358 vergelijkt twee spanningen op pin 2 en 3, te zien in figuur \eqref{schematic-HW-201}. Afhankelijk van de sterkte van de infrarood straling, komt er een spanning op pin 3 te staan door de fotodiode. Pin 2 is aangesloten op een variabele weerstand. Door aan de variabele weerstand te draaien komt er een andere spanning te staan op pin 2, waarmee de gevoeligheid kan worden ingesteld. Als op pin 3 een hogere spanning komt te staan dan op pin 2, wordt er op pin 1, de output pin, een hoog signaal gegeven. Een laag signaal wordt gegeven als de spanning op pin 3 lager is dan op pin 2.
 
 De infrarood sensor geeft een digitaal signaal op de output pin: 0V of 5V. Voor het meten van de sensoren is gebruik gemaakt van de Seriële monitor in de Arduino IDE met een baudrate van 115200. 
 
@@ -32,8 +34,7 @@ struct data{
   int distance; //US
   int angle; //US
   int anglepolarity; //0 = min, 1 = plus, used for IR
-  char sensor_type[30];
-};
+  char sensor_type[30];};
 
 struct data IR_sensor[] ={
 {"RF", 0, 0, 0, 0, 1, "IR Sensor"},
@@ -43,22 +44,18 @@ struct data IR_sensor[] ={
 {"RF", 0, 0, 0, 45, 1, "IR Sensor"},
 {"LF", 0, 0, 0, 45, 0, "IR Sensor"},
 {"LB", 0, 0, 0, 45, 1, "IR Sensor"},
-{"RB", 0, 0, 0, 45, 0, "IR Sensor"}
-};
+{"RB", 0, 0, 0, 45, 0, "IR Sensor"}};
 
 void IRstate() { //Reading IR state
   for (int i = 0; i<IR_sensoramount; i++){
-    IR_sensor[i].state = digitalRead(IR_pins[i]);
-   }}
+    IR_sensor[i].state = digitalRead(IR_pins[i]);}}
    
    void setup() {
    for (int i = 0; i<IR_sensoramount; i++){
-    pinMode(IR_pins[i], INPUT);
-  }}
+    pinMode(IR_pins[i], INPUT);}}
   
   void loop() {
-  IRstate();
-  }
+  IRstate();}
 \end{lstlisting}
 \subsubsection{Ultrasonische sensoren}
 De HC-SR04 sensor beschikt over vier pinnen: VCC, GND, trigger en echo. VCC en GND worden op de motorshield voeding aangesloten respectievelijk 5V en grond. De trigger- en echopin wordt aangesloten op een digitale pin van de Arduino mega 2560\cite{HC-SR04}.
@@ -82,14 +79,12 @@ struct data{
   int distance; //US
   int angle; //US
   int anglepolarity; //0 = min, 1 = plus, used for IR
-  char sensor_type[30];
-  };
+  char sensor_type[30];};
   
   struct data Sonar_sensor[] ={ //declaring 3 sonar sensors 
   {"FRONT", 0, 0, 0, 0, 0, "Sonar sensor"},
   {"LEFT", 0, 0, 0, 0, "Sonar sensor"},
-  {"RIGHT", 0, 0, 0, 0, "Sonar sensor"}
-  };
+  {"RIGHT", 0, 0, 0, 0, "Sonar sensor"}};
   
   void Sonarstate(){ //Reading Sonar state/distance
   for (int i = 0; i<Sonar_sensoramount; i++){
@@ -99,17 +94,14 @@ struct data{
   delayMicroseconds(10);
   digitalWrite(sonartrig_pins[i], LOW); 
   Sonar_sensor[i].duration = pulseIn(sonarecho_pins[i], HIGH);
-  Sonar_sensor[i].distance = Sonar_sensor[i].duration * 0.034 / 2; 
-  }}
+  Sonar_sensor[i].distance = Sonar_sensor[i].duration * 0.034 / 2;}}
   
 void setup() {
 for (int i = 0; i<Sonar_sensoramount; i++){
     pinMode(sonarecho_pins[i], INPUT);
-    pinMode(sonartrig_pins[i], OUTPUT);
-  }}
+    pinMode(sonartrig_pins[i], OUTPUT);}}
   void loop() {
-  Sonarstate();  
-}
+  Sonarstate();}
 
 \end{lstlisting}
 
@@ -207,6 +199,7 @@ Voor de 2e versie van de servo code is het standaard proces wederom toegepast. H
 De 3e versie van de servo code is het meest complex van de drie versies. Hiervoor moest het test proces dan ook vaak herhaald worden. De bedoeling was dat de 3e versie geen delay functies zou bevatten. Om dit voor elkaar te krijgen moest, zoals eerder al uitgelegd, de functie millis() gebruikt worden. Deze functie is aanzienlijk anders dan de eerste twee versies. Na het testproces werkte het echter wel. Toen het in de samengevoegde code werd gezet traden er problemen op. Het resultaat was niet zoals verwacht. De oplossing hiervoor zal nog moeten worden gevonden. 
 
 \subsection{Matrix}
+	Voor het testen van het 8x8 Matrix-scherm was de vijf aansluitpinnen pinnen vervolgens schema aangesloten in de arduino bord mega 2560 , en gebruik gemaakt van een replica-code die van het internet hebben gehaald. Replica-code was enkel gebruikt voor testdoeleinden en was niet geïmplementeerd in ons eigen code ontwerp.
 \subsection{Modules}
 \subsubsection{Bluetooth}
 De HC-05 bluetooth module heeft 6 pinnen, waarvan er vier gebruikt worden voor het besturen van de \gls{Smart-Car}. Dit zijn de pinnen: VCC, GND, \gls{Tx en Rx}. VCC en GND worden aangesloten op de voeding van de Arduino Mega 2560, respectievelijk 5V en GND.  De bluetooth Tx pin wordt aangesloten op de Arduino Mega 2560 Rx1 pin. De bluetooth Rx pin werkt op 3,3V en de Arduino Mega 2560 Tx1 pin op 5V. Hiervoor wordt een spanningsdeling geplaatst met een weerstand van 2000\si{\ohm} en 1000\si{\ohm}. De Arduino Rx1 pin wordt aangesloten op bluetooth Tx pin.
@@ -224,23 +217,16 @@ In de volgende alinea is een eenvoudige code voor het inlezen van bluetooth sign
 \newpage
 \begin{lstlisting}
 char bluetoothValue;
-
-void setup()   {//Here the code only runs once.
-  
+void setup() {//Here the code only runs once.
   Serial.begin(9600);
-  Serial1.begin(9600);
-}
+  Serial1.begin(9600);}
 
 void loop() {
-
 while(Serial1.available()>0){ 
-  
 bluetoothValue = Serial1.read();
-
 Serial.print(bluetoothValue);
 //Serial.print("\n");
 delay(10);
-
   if(bluetoothValue =='0'){
       Serial.println(" Left ");
   }else if(bluetoothValue == '1'){
@@ -258,8 +244,7 @@ delay(10);
   }else if(bluetoothValue == '7'){
       Serial.println(" Stop");
   }else if (bluetoothValue == '8'){
-      Serial.println(" Right rotation"); 
-    }}}
+      Serial.println(" Right rotation");}}}
 \end{lstlisting}
 \subsubsection{RF433MHZ}
 
@@ -270,7 +255,7 @@ In regel 4 en daaropvolgende regels worden de variabelen beschreven die de \gls{
 
 In het geval dat de ultrasone sensoren een foutieve waarde afgeven en de \gls{Smart-Car} niet in staat is om rechtdoor te rijden maar dit toch blijft doen en dus vast komt te zitten, zal dit worden gedetecteerd en zal de \gls{Smart-Car} zichzelf uit deze situatie bevrijden, zoals beschreven in regels 54 en 55.
 \begin{lstlisting}
-    int sidecount = 0;
+int sidecount = 0;
 int rotation = 500;
 int driven = 0;
 float TargetRoll = 0.0;    
@@ -280,18 +265,15 @@ float MovementThreshold = 0.05;
 
 void selfdrive(){
 imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
-
      MotorPWM1 = 90;
      MotorPWM2 = 90;
      MotorPWM3 = 90;
      MotorPWM4 = 90;
-
   TargetRoll=AXIS_sensor[0].xaxis;
   float RollError = AXIS_sensor[0].xaxis - TargetRoll;
   float PitchError = AXIS_sensor[0].yaxis - TargetPitch;
 
-  if(Sonar_sensor[0].distance>30 || IR_sensor[2].state==0 || IR_sensor[7].state==0)
-  {
+  if(Sonar_sensor[0].distance>30 || IR_sensor[2].state==0 || IR_sensor[7].state==0) {
     if (abs(RollError) <= Tolerance && abs(PitchError) <= Tolerance) {
     // Car is driving straight, use default motor PWM values
     MOTOR(DIR_Forward, MotorPWM1, MotorPWM2, MotorPWM3, MotorPWM4);
@@ -330,12 +312,11 @@ if(Sonar_sensor[2].distance<10){
     STOP();
     delay(250);
     Right_Rotation();
-    delay(rotation);
-      }}
+    delay(rotation);}}
 \end{lstlisting}
 Om de gemiddelde snelheid van een \gls{Smart-Car} te berekenen, moet de vectoriële som van de acceleratiesnelheden uitgerekend worden.
 \begin{equation}
-speed = \sqrt{accel.x^2 + accel.y^2 + accel.z^2}
+speed = \sqrt{accel.x^2 + accel.y^2}
 \end{equation}
 
 \subsection{Excelleren}
