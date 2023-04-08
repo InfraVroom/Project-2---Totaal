@@ -1,7 +1,41 @@
+
+
+\section{Assemblage Smart-Car}
+Bij de kick-off van het project is de \gls{Smart-Car} geassembleerd.
+De \gls{Smart-Car} bestaat uit de volgende onderdelen: onderkant, bovenkant, sensoren en actuatoren.
+\\
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.35]{Media/Figuren/assembleren onderkant.jpg}
+    \caption{Onderkant}
+    \label{Onderkant-Smart-Car}
+\end{figure}
+\\
+In figuur \ref{Onderkant-Smart-Car} is de onderkant van de \gls{Smart-Car} te zien. Aan de onderkant worden de motoren en de LED-matrix gemonteerd met schroeven en moeren.
+\\
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.20]{Media/Figuren/assembleren bovenkant.jpg}
+    \caption{Bovenkant}
+    \label{Bovenkant-Smart-Car}
+\end{figure}
+\\
+In figuur \ref{Bovenkant-Smart-Car} is de bovenkant van de \gls{Smart-Car} te zien. Op de bovenkant zijn de ultrasonische sensoren,  infrarood sensoren, Arduino Mega 2560 met daarop de motorshield en de servo motoren. Er is voor gekozen om acht infrarood sensoren te gebruiken, zie \ref{Hoofdstuk-IR-onderdelen}. 
+\\
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.7]{Media/Figuren/assembleren totaal.jpg}
+    \caption{Eindassemblage}
+    \label{Eindresultaat-Smart-Car}
+\end{figure}
+\\
+In figuur \ref{Eindresultaat-Smart-Car} is het eindresultaat te zien van de \gls{Smart-Car}, waarbij de bovenkant en onderkant aan elkaar zijn gemonteerd.
+
+
 \section{Uit welke onderdelen bestaat de Smart-Car en waarvoor worden deze gebruikt?}
-De \gls{Smart-Car} bestaat uit verschillende onderdelen, waaronder sensoren en actuatoren. Sensoren zoals infrarood\cite{IR-datasheet}- en ultrasonische sensoren worden gebruikt om objecten te detecteren en afstanden te meten, terwijl motoren worden aangestuurd door een \gls{motorshield} dat bestaat uit een \gls{shift-register} en motor drivers\cite{h-brug}. De 9 axis sensor meet de oriëntatie van de \gls{Smart-Car} en wordt momenteel alleen gebruikt om de auto rechtdoor te laten rijden.
+De \gls{Smart-Car} bestaat uit verschillende onderdelen, waaronder sensoren en actuatoren. Sensoren zoals infrarood\cite{IR-datasheet}- en ultrasonische sensoren worden gebruikt om objecten te detecteren en afstanden te meten, terwijl motoren worden aangestuurd door een \gls{motorshield} dat bestaat uit een \gls{shift-register} en motor drivers\cite{h-brug}. De negen axis sensor meet de oriëntatie van de \gls{Smart-Car} en wordt momenteel alleen gebruikt om de auto rechtdoor te laten rijden.
 \subsection{Sensoren}
-\subsubsection{Infrarood sensoren}
+\subsubsection{Infrarood sensoren} \label{Hoofdstuk-IR-onderdelen}
 \begin{figure}[h]
     \centering
     \includegraphics[scale = 0.35]{Media/Figuren/HW-201.jpg}
@@ -129,7 +163,7 @@ Achterin de \gls{Smart-Car}, in het midden, bevindt zich een 8x8 matrixbord met 
 Gebaseerd op het doel van de codeconstructie, bestaat de code uit 10 hexadecimale combinaties, elk met een volledige richtingpijl. Deze 10 pijlen worden gedeclareerd in een reeks van sizeof en geformuleerd in een void functie. Vervolgens moet voor elke pijl, per richting,individueel worden aangegeven wanneer deze tevoorschijn moet komen. Dit kan eenvoudig worden gedaan door bij het volledige programma de gewenste pijl te selecteren met de aanroep "displayImage(IMAGES[]);". Het resultaat is een kort en efficiënt code-ontwerp dat gemakkelijk aan elk programma kan worden toegevoegd.
 Dit proces is tot stand gekomen met behulp van drie codes: 
 \begin{enumerate}
-    \item Voorbeeldcode: dit is een replica-code die van internet is gehaald om te testen of het scherm goed werkt en om een idee te krijgen voor de eigen code.
+    \item Voorbeeldcode: dit is een replica-code die van internet is gehaald om te testen of het scherm goed werkt.
     \begin{lstlisting}
 #include <MAX7219.h>
 int DIN = 50;
