@@ -10,6 +10,9 @@ Dit hoofdstuk beschrijft hoe infrarood, ultrasonisch en 9-axis sensoren zijn get
     \cite{HW-201-schema}
     \label{schematic-HW-201}   
     \end{figure}
+\begin{comment}
+    
+
 De infrarood sensor beschikt over drie aansluitingen: VCC, GND en een output pin. De VCC wordt op de 5V aangesloten en de GND pin wordt aangesloten op de grond. Beide pinnen worden aangesloten op de motorshield. De output pin word aangesloten op een willekeurige digitale pin op de Arduino Mega 2560. Voor het inlezen van de infrarood sensor moet op de Arduino mega 2560 de digitale pin worden gedefinieerd als input pin. Later kan met de data iets worden gedaan om objecten te vermijden.
 
 De infrarood sensor beschikt over een LM358 IC\cite{LM358-datasheet}. In figuur \eqref{schematic-HW-201}\cite{HW-201-schema} is de schematische tekening te zien van de infrarood sensor. De LM358 vergelijkt twee spanningen op pin 2 en 3, te zien in figuur \eqref{schematic-HW-201}. Afhankelijk van de sterkte van de infrarood straling, komt er een spanning op pin 3 te staan door de fotodiode. Pin 2 is aangesloten op een variabele weerstand. Door aan de variabele weerstand te draaien komt er een andere spanning te staan op pin 2, waarmee de gevoeligheid kan worden ingesteld. Als op pin 3 een hogere spanning komt te staan dan op pin 2, wordt er op pin 1, de output pin, een hoog signaal gegeven. Een laag signaal wordt gegeven als de spanning op pin 3 lager is dan op pin 2.
@@ -17,6 +20,9 @@ De infrarood sensor beschikt over een LM358 IC\cite{LM358-datasheet}. In figuur 
 De infrarood sensor geeft een digitaal signaal op de output pin: 0V of 5V. Voor het meten van de sensoren is gebruik gemaakt van de Seriële monitor in de Arduino IDE met een baudrate van 115200. 
 
 Tijdens het testen werkte twee sensoren niet. Daarvoor zijn er op de oscilloscoop metingen gedaan. Hieruit werd duidelijk dat de sensoren geen 5V genereerden, maar een onbetrouwbare spanning van 2,5V tot 3,5V. In het ideale geval moet er een spanning van 5V op de output pin staan. Hierna is geconcludeerd dat de sensoren opgeblazen waren, waarna er vervolgens nieuwe infrarood sensoren zijn aangevraagd bij  Ad van den Bergh.
+\end{comment}
+
+De infrarood sensor heeft drie aansluitingen: VCC, GND en een output pin. VCC wordt verbonden met 5V en GND wordt verbonden met de grond. Beide pinnen worden aangesloten op het motorshield. De output pin wordt verbonden met een willekeurige digitale pin op de Arduino Mega 2560, die moet worden ingesteld als een input pin om de infrarood sensor uit te lezen. De sensor maakt gebruik van een LM358 IC om twee spanningen te vergelijken. In figuur \eqref{schematic-HW-201}\cite{HW-201-schema} is de schematische tekening te zien van de infrarood sensor.  De fotodiode genereert een spanning op pin 3, afhankelijk van de sterkte van de infrarood straling, terwijl pin 2 verbonden is met een variabele weerstand om de gevoeligheid in te stellen. Als de spanning op pin 3 hoger is dan op pin 2, wordt er een hoog signaal gegeven op pin 1 (output pin); anders wordt een laag signaal gegeven. De sensor genereert een digitaal signaal van 0V of 5V op de output pin. Tijdens het testen werd ontdekt dat twee sensoren geen betrouwbare 5V genereerden, maar een spanning tussen 2,5V en 3,5V. Deze sensoren waren defect en er zijn nieuwe aangevraagd.
 
 Onder deze alinea bevindt zich de code voor het inlezen van de infrarood sensor. In regel 2 en 3 worden de pinnen van de infrarood sensoren gedefinieerd en wordt het aantal infrarood sensoren opgeslagen om later de data eenvoudig uit te lezen en op te slaan. Vervolgens worden er in regel 5-13 een structure gedefineerd voor de infrarood en ultrasonische sensoren. Voor de infrarood sensor wordt de data voor location[5], state, anglepolarity en sensor\_type[30] respectievelijk locatie, status, hoekpositie en het type sensor gebruikt. Daarna wordt in regel 16-25 een structure aangemaakt met de  meegegeven data. In regel 27-30 is een functie IRstate() aangemaakt voor het uitlezen van de sensorwaardes, waarna de waardes in de structure IR\_sensor worden opgeslagen. Daarna worden in regel 33-35 de infrarood sensoren als input gedefinieerd. Ten slotte kan in regel 38 de functie IRstate() worden aangeroepen.
 
@@ -61,7 +67,6 @@ void IRstate() { //Reading IR state
 De HC-SR04 sensor beschikt over vier pinnen: VCC, GND, trigger en echo. VCC en GND worden op de motorshield voeding aangesloten respectievelijk 5V en grond. De trigger- en echopin wordt aangesloten op een digitale pin van de Arduino mega 2560\cite{HC-SR04}.
 
 De triggerpin is bedoeld om een ultrasonische geluid in de ruimte te sturen door deze pin voor 10 µs hoog te zetten. Nadat de triggerpin laag wordt gezet, wordt de echopin hoog en wacht deze op het ontvangen van het ultrasonisch geluid. Op dit moment wordt de tijd bijgehouden tot het geluid wordt ontvangen. Wanneer er een ultrasonisch geluid wordt ontvangen, wordt de echopin laag. Hieruit kan een afstand worden bepaald, namelijk afstand = snelheid geluid x tijd. Doordat het enige tijd duurt voordat een afstand wordt gemeten, kan een vertraging in de code ontstaan, alhoewel deze miniem zal zijn.
-
 Voor het meten van afstanden van de ultrasonische sensoren is de Seriële monitor  in de Arduino IDE gebruikt met een baudrate van 115200, wat geschikt is voor weergeven van  een afstand tot een object.
 
 Onder deze alinea bevindt zich de code voor het uitlezen en opslaan van de ultrasonische sensor. In regel 2-4 worden de trigger- en echopinnen gedefinieerd, waarbij ook het aantal ultrasoniche sensoren wordt opgeslagen om later eenvoudig de data uit te lezen en op te slaan. Vervolgens wordt in regel 6-14 de structure gedefinieerd voor de infrarood en ultrasonische sensoren. Voor de ultrasonische sensor wordt de data location[5], duration, distance en sensor\_type[30] respectievelijk locatie, duur, afstand en het type sensor gebruikt. Daarna wordt een structure aangemaakt met de meegegeven data. In de regel 22-31 wordt de afstand berekent, waarna het in de structure Sonar\_sensor wordt opgeslagen. Vervolgens worden in regel 33-37 de trigger- en echopin respectievelijk als output en input gedefinieerd. Ten slotte wordt de functie Sonarstate() in regel 39  aangeroepen.
@@ -185,7 +190,8 @@ void Forward(){
     displayImage(IMAGES[1]);}
 \end{lstlisting}
 
-Om het \gls{motorshield} volledig aan te sturen, is het noodzakelijk om een 8-bits code te verzenden. Deze code is in decimale notatie vastgelegd. Alle beschikbare oriëntatie mogelijkheden zijn opgenomen in tabel 1, figuur \ref{directions}.
+Om het \gls{motorshield} volledig aan te sturen, is het noodzakelijk om een 8-bits code te verzenden. Deze code is in decimale notatie vastgelegd. Alle beschikbare oriëntatie mogelijkheden zijn opgenomen in tabel 1, figuur 
+\ref{directions}.
 
 \subsubsection{Servo}
 Zoals eerder besproken, zijn voor de servo meerdere verschillende versies van de code geschreven. Om te weten of dit werkte moest het getest worden. Het proces van uploaden, uitvoeren, fouten verbeteren en weer herhalen, is het standaard testproces.
@@ -246,7 +252,7 @@ delay(10);
   }else if (bluetoothValue == '8'){
       Serial.println(" Right rotation");}}}
 \end{lstlisting}
-\subsubsection{RF433MHZ}
+
 
 \subsection{Zelf rijden}
 Onze \gls{Smart-Car} is in staat om zelfstandig te rijden, maar momenteel werkt dit nog niet optimaal. De \gls{Smart-Car} zal continu rechtdoor blijven rijden (zoals beschreven in regel 21), totdat niet meer aan een van de voorwaarden wordt voldaan. Tegelijkertijd controleert de \gls{Smart-Car} of er voldoende ruimte is aan de zijkanten; indien dit niet het geval is, zal hij corrigerend optreden.
